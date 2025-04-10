@@ -1,11 +1,11 @@
 # Define instruction execution times in ns
 INSTRUCTION_COSTS = {
-    'LOAD': 100,
-    'STORE': 200,
-    'ADD': 10,
-    'SUB': 10,
-    'MUL': 20,
-    'DIV': 20
+    'LOAD': 10,
+    'STORE': 20,
+    'ADD': 1,
+    'SUB': 1,
+    'MUL': 5,
+    'DIV': 5
 }
 
 class Process:

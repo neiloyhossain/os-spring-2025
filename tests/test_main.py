@@ -2,6 +2,7 @@ import sys
 import pytest
 from models.process import Process
 import main
+from unittest.mock import patch
 
 def dummy_load_process(file_path, process_id):
     # Always return a process with the same known instructions.
@@ -32,6 +33,21 @@ def test_main_fcfs(capsys):
 def test_main_rr(capsys):
     # Test main with the Round Robin scheduler.
     output = run_main_with_args(["main.py", "--scheduler", "rr"], capsys)
-    assert "Running Round Robin scheduler..." in output
+    assert "Running Round Robin scheduler with quantum = 500 ns..." in output
     assert "Process Metrics:" in output
-    assert "Total simulation time:" in output 
+    assert "Total simulation time:" in output
+
+def test_main_rr_custom_quantum(capsys):
+    # Test main with the Round Robin scheduler and a custom quantum.
+    output = run_main_with_args(["main.py", "--scheduler", "rr", "--quantum", "300"], capsys)
+    assert "Running Round Robin scheduler with quantum = 300 ns..." in output
+    assert "Process Metrics:" in output
+    assert "Total simulation time:" in output
+
+@patch('main.perform_parameter_sweep')
+def test_main_parameter_sweep(mock_perform_parameter_sweep, capsys):
+    # Test main with the parameter sweep option.
+    output = run_main_with_args(["main.py", "--sweep"], capsys)
+    assert "Running parameter sweep simulations..." in output
+    # Verify that perform_parameter_sweep was called
+    mock_perform_parameter_sweep.assert_called_once() 

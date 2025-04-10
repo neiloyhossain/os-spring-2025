@@ -3,6 +3,7 @@ from models.operating_system import OperatingSystemModel
 from models.process_table_entry import ProcessTableEntry
 from models.process import Process
 from models.scheduler import fcfs_scheduler, round_robin_scheduler
+from utils.parameter_sweep import perform_parameter_sweep
 
 def load_process(file_path, process_id):
     """
@@ -18,9 +19,19 @@ def main():
     parser = argparse.ArgumentParser(description="OS Scheduling Simulator")
     parser.add_argument('--scheduler', choices=['fcfs', 'rr'], default='fcfs',
                         help="Choose the scheduler: 'fcfs' for First-Come-First-Served, 'rr' for Round Robin")
+    parser.add_argument('--sweep', action='store_true',
+                        help="Run parameter sweep simulations")
+    parser.add_argument('--quantum', type=int, default=500,
+                        help="Time quantum for Round Robin scheduler in nanoseconds (default: 500)")
     args = parser.parse_args()
-
-    os_model = OperatingSystemModel()  # quantum is 2ms (2,000,000 ns) by default
+    
+    if args.sweep:
+        print("Running parameter sweep simulations...")
+        perform_parameter_sweep()
+        return
+    
+    # Regular simulation with fixed process files
+    os_model = OperatingSystemModel(quantum=args.quantum)
 
     # List of process files to load (only 4 processes)
     process_files = [
@@ -42,7 +53,7 @@ def main():
         print("Running FCFS scheduler...")
         fcfs_scheduler(os_model, processes)
     else:
-        print("Running Round Robin scheduler...")
+        print(f"Running Round Robin scheduler with quantum = {args.quantum} ns...")
         round_robin_scheduler(os_model, processes)
 
     # Display performance metrics for each process

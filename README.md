@@ -12,17 +12,17 @@ The simulation models core OS components and processes to study the impact of sc
 
 ### Process Model
 - Represents a sequence of instructions (e.g., `LOAD`, `ADD`, `STORE`).
-- Maintains essential state information including the program counter (PC) and a start time (with nanosecond precision).
+- Maintains essential state information including the program counter (PC).
 
 ### Instruction Types and Execution Costs
 - **Memory Operations**
-  - `LOAD`: 100 ns
-  - `STORE`: 200 ns
+  - `LOAD`: 10 ns
+  - `STORE`: 20 ns
 - **Arithmetic Operations**
-  - `ADD`: 10 ns
-  - `SUB`: 10 ns
-  - `MUL`: 20 ns
-  - `DIV`: 20 ns
+  - `ADD`: 1 ns
+  - `SUB`: 1 ns
+  - `MUL`: 5 ns
+  - `DIV`: 5 ns
 
 ### CPU Model
 - Keeps track of the current execution state via the program counter.
@@ -42,6 +42,7 @@ The simulation models core OS components and processes to study the impact of sc
   - **Current Process:** The process currently being executed.
   - **Current Time:** The system time in nanoseconds.
   - **Time Quantum:** For Round Robin scheduling, the default quantum is set to **500 ns** (this can be adjusted during OS model initialization).
+  - **Context Switch Penalty:** Default is **20 ns**, representing the overhead of switching between processes.
 
 ## Process Profiles
 
@@ -53,10 +54,14 @@ The simulation includes four distinct types of processes:
 
 Process instruction files are stored in the `data/` directory (e.g., `data/process_a.txt`, `data/process_b.txt`, etc.).
 
+Additionally, the system supports dynamic process generation with configurable workload characteristics:
+- A process generator can create processes with a specified number of instructions and CPU vs. memory instruction probability.
+- This is particularly useful for the parameter sweep functionality that analyzes scheduling performance across various workload profiles.
+
 ## Scheduling Algorithms
 
-- **FCFS Scheduler:** Executes processes in the order they appear in the ready list, running each process to completion.
-- **Round Robin Scheduler:** Allocates a fixed time slice to each process. If the process cannot complete its next instruction within the remaining quantum, it is preempted and added back to the ready queue. Any unused quantum is simulated as idle time.
+- **FCFS Scheduler:** Executes processes in the order they appear in the ready list, running each process to completion. Context switches are applied between processes.
+- **Round Robin Scheduler:** Allocates a fixed time slice to each process. If the process cannot complete its next instruction within the remaining quantum, it is preempted and added back to the ready queue. Context switches are applied between time slices.
 
 ## Performance Metrics
 
@@ -71,39 +76,54 @@ The simulation outputs each process's metrics along with the total simulation ti
 
 Run the simulation from the command line using:
 
-  python main.py --scheduler [fcfs | rr]
+```
+python main.py --scheduler [fcfs | rr]
+```
 
 Example:
 
-  python main.py --scheduler fcfs
+```
+python main.py --scheduler fcfs
+```
 
 The `--scheduler` flag lets you choose between the FCFS and Round Robin scheduling approaches.
 
-## Running Tests
+You can also adjust the Round Robin quantum (default is 500 ns):
 
-This project uses pytest for unit testing. To run all tests, install pytest (if necessary) and execute:
+```
+python main.py --scheduler rr --quantum 300
+```
 
-  pytest tests/
+### Parameter Sweep
+
+The project includes a parameter sweep feature that simulates different configurations and generates performance analysis charts:
+
+```
+python main.py --sweep
+```
+
+This will:
+1. Run simulations across a range of CPU vs. memory instruction probabilities (0 to 0.9).
+2. For Round Robin, test various quantum values (100 to 900 ns).
+3. Generate charts in the `output/` directory showing:
+   - Total simulation time vs. CPU probability and quantum
+   - Average turnaround time vs. CPU probability and quantum
+   - Average waiting time vs. CPU probability and quantum
+   - Heatmaps visualizing the relationships between parameters and performance
 
 ## Project Structure
 
 - **main.py**: Entry point for the simulation.
 - **models/**: Contains the core modules:
   - **process.py**: Defines the process model and instruction execution logic.
-  - **operating_system.py**: Implements the OS model that manages the process table and ready list.
+  - **operating_system.py**: Implements the OS model that manages the process table, ready list, and context switching.
   - **process_table_entry.py**: Data structure for process metadata.
   - **scheduler.py**: Contains implementations for the FCFS and Round Robin scheduling algorithms.
+- **utils/**: Contains utility modules:
+  - **process_generator.py**: Generates processes with configurable instruction characteristics.
+  - **parameter_sweep.py**: Implements parameter sweep simulations and chart generation.
 - **data/**: Contains text files with process instructions.
+- **output/**: Directory for generated charts from parameter sweeps.
 - **tests/**: Unit tests for all key modules and scheduling functions.
 - **.github/workflows/test.yaml**: GitHub Actions configuration for automated testing.
-
-## Contributors
-
-[Add contributor information here]
-
-## License
-
-[Add license information here]
-
-
 
