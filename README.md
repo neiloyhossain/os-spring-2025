@@ -1,129 +1,111 @@
-# Modeling and Analysis of OS Scheduling Algorithms
+# Operating System Simulator
 
-This project simulates and analyzes different CPU scheduling algorithms using a simple operating system model. It demonstrates how various scheduling strategies affect process execution metrics by running simulated processes represented by sequences of instructions.
+This project simulates and analyzes different aspects of operating system behavior, including CPU scheduling and page table management.
 
-## Project Overview
+## Features
 
-The simulation models core OS components and processes to study the impact of scheduling decisions. Two scheduling algorithms are implemented:
-- **First-Come-First-Served (FCFS):** Processes run to completion in the order they arrive.
-- **Round Robin (RR):** Processes receive fixed time slices (quanta) and may be preempted if they do not finish execution within their allotted time.
-
-## System Components
-
-### Process Model
-- Represents a sequence of instructions (e.g., `LOAD`, `ADD`, `STORE`).
-- Maintains essential state information including the program counter (PC).
-
-### Instruction Types and Execution Costs
-- **Memory Operations**
-  - `LOAD`: 10 ns
-  - `STORE`: 20 ns
-- **Arithmetic Operations**
-  - `ADD`: 1 ns
-  - `SUB`: 1 ns
-  - `MUL`: 5 ns
-  - `DIV`: 5 ns
-
-### CPU Model
-- Keeps track of the current execution state via the program counter.
-
-### Operating System Model
-- Maintains a **Process Table** for all processes and a **Ready List** for those that are ready to run.
-- Each process is recorded using a **Process Table Entry** which includes:
-  - **Process ID**
-  - **Process State**
-    - `PR_READY`: The process is ready to be scheduled.
-    - `PR_CURR`: The process is currently running.
-    - `PR_DONE`: The process has finished execution.
-  - **Start Time:** When the process is created.
-  - **End Time:** When the process completes.
-  - **CPU Time:** The total time the process spent executing instructions.
-- Tracks overall system state:
-  - **Current Process:** The process currently being executed.
-  - **Current Time:** The system time in nanoseconds.
-  - **Time Quantum:** For Round Robin scheduling, the default quantum is set to **500 ns** (this can be adjusted during OS model initialization).
-  - **Context Switch Penalty:** Default is **20 ns**, representing the overhead of switching between processes.
-
-## Process Profiles
-
-The simulation includes four distinct types of processes:
-1. **Process A:** Memory-intensive workload (more `LOAD` and `STORE` operations).
-2. **Process B:** CPU-intensive workload (primarily arithmetic operations).
-3. **Process C:** Balanced workload (a mix of CPU and memory operations).
-4. **Process D:** Random instruction mix providing varied workloads.
-
-Process instruction files are stored in the `data/` directory (e.g., `data/process_a.txt`, `data/process_b.txt`, etc.).
-
-Additionally, the system supports dynamic process generation with configurable workload characteristics:
-- A process generator can create processes with a specified number of instructions and CPU vs. memory instruction probability.
-- This is particularly useful for the parameter sweep functionality that analyzes scheduling performance across various workload profiles.
-
-## Scheduling Algorithms
-
-- **FCFS Scheduler:** Executes processes in the order they appear in the ready list, running each process to completion. Context switches are applied between processes.
-- **Round Robin Scheduler:** Allocates a fixed time slice to each process. If the process cannot complete its next instruction within the remaining quantum, it is preempted and added back to the ready queue. Context switches are applied between time slices.
-
-## Performance Metrics
-
-For each process, the following metrics are captured:
-- **Turnaround Time:** Total time from process creation to completion (calculated as `end_time - start_time`).
-- **CPU Time:** Total time the process spent executing instructions.
-- **Waiting Time:** Time spent waiting in the ready queue (calculated as `turnaround_time - cpu_time`).
-
-The simulation outputs each process's metrics along with the total simulation time.
-
-## Usage
-
-Run the simulation from the command line using:
-
-```
-python main.py --scheduler [fcfs | rr]
-```
-
-Example:
-
-```
-python main.py --scheduler fcfs
-```
-
-The `--scheduler` flag lets you choose between the FCFS and Round Robin scheduling approaches.
-
-You can also adjust the Round Robin quantum (default is 500 ns):
-
-```
-python main.py --scheduler rr --quantum 300
-```
-
-### Parameter Sweep
-
-The project includes a parameter sweep feature that simulates different configurations and generates performance analysis charts:
-
-```
-python main.py --sweep
-```
-
-This will:
-1. Run simulations across a range of CPU vs. memory instruction probabilities (0 to 0.9).
-2. For Round Robin, test various quantum values (100 to 900 ns).
-3. Generate charts in the `output/` directory showing:
-   - Total simulation time vs. CPU probability and quantum
-   - Average turnaround time vs. CPU probability and quantum
-   - Average waiting time vs. CPU probability and quantum
-   - Heatmaps visualizing the relationships between parameters and performance
+- **Part 2: CPU Scheduling Simulation**
+  - Simulate First-Come-First-Served (FCFS) and Round Robin (RR) scheduling algorithms.
+  - Model processes with different instruction mixes (CPU-bound, I/O-bound, balanced).
+  - Calculate performance metrics: Turnaround Time, CPU Time, Waiting Time.
+  - Perform parameter sweeps to analyze scheduler performance under varying conditions (e.g., quantum values, workload types).
+- **Part 3: Page Table Replacement Simulation**
+  - Simulate page replacement algorithms: FIFO, LRU, LFU.
+  - Configure the number of physical memory frames and virtual pages.
+  - Generate different page reference patterns (random, locality, sequential).
+  - Compare algorithm performance based on Hit Rate, Miss Rate, and Page Faults.
+  - Generate comparison charts visualizing algorithm performance across patterns.
 
 ## Project Structure
 
-- **main.py**: Entry point for the simulation.
-- **models/**: Contains the core modules:
-  - **process.py**: Defines the process model and instruction execution logic.
-  - **operating_system.py**: Implements the OS model that manages the process table, ready list, and context switching.
-  - **process_table_entry.py**: Data structure for process metadata.
-  - **scheduler.py**: Contains implementations for the FCFS and Round Robin scheduling algorithms.
-- **utils/**: Contains utility modules:
-  - **process_generator.py**: Generates processes with configurable instruction characteristics.
-  - **parameter_sweep.py**: Implements parameter sweep simulations and chart generation.
-- **data/**: Contains text files with process instructions.
-- **output/**: Directory for generated charts from parameter sweeps.
-- **tests/**: Unit tests for all key modules and scheduling functions.
-- **.github/workflows/test.yaml**: GitHub Actions configuration for automated testing.
+- **main.py**: Central entry point to run simulations for either Part 2 or Part 3.
+- **page_table_sim.py**: Contains logic specific to page table simulations (called by `main.py`).
+- **models/**: Core simulation components
+  - **operating_system.py**: Main OS model (used by both parts, handles processes, potentially page table).
+  - **process.py**: Defines the process model and instruction execution (Part 2).
+  - **scheduler.py**: Implements FCFS and RR scheduling algorithms (Part 2).
+  - **page_table.py**: Page table implementation with replacement algorithms (Part 3).
+  - **page_table_entry.py**: Individual page table entry representation (Part 3).
+  - **process_table_entry.py**: Data structure for process metadata (used by both parts).
+- **utils/**: Utility modules
+  - **parameter_sweep.py**: Implements parameter sweep for scheduler simulations (Part 2).
+  - **reference_generator.py**: Generates different types of page reference sequences (Part 3).
+  - **process_generator.py**: Generates processes with configurable instruction characteristics (Part 2).
+- **data/**: Contains text files with process instructions for Part 2 simulations.
+- **output/**: Directory for generated charts and results.
+
+## Usage (via main.py)
+
+The primary way to run simulations is through `main.py`. Use the `--part` argument to select the simulation type.
+
+### Part 2: CPU Scheduling
+
+**1. Run a Single Simulation:**
+
+   - **FCFS (Default):**
+     ```bash
+     python main.py --part 2
+     # or simply:
+     python main.py 
+     ```
+   - **Round Robin:**
+     ```bash
+     python main.py --part 2 --scheduler rr
+     # Specify a different quantum (default: 500 ns)
+     python main.py --part 2 --scheduler rr --quantum 300
+     ```
+
+**2. Run Scheduler Parameter Sweep:**
+
+   This performs simulations across different workload types and quantum values (for RR), generating analysis charts in `output/`.
+   ```bash
+   python main.py --part 2 --sweep
+   ```
+
+### Part 3: Page Table Replacement
+
+**Run Algorithm Comparison Sweep:**
+
+This compares FIFO, LRU, and LFU algorithms across different reference patterns (random, locality, sequential) and generates charts in `output/`.
+
+   - **Using default parameters (8 frames, 16 pages, 1000 references):**
+     ```bash
+     python main.py --part 3 --sweep
+     ```
+   - **Specifying custom parameters:**
+     ```bash
+     python main.py --part 3 --sweep --frames 12 --num-pages 32 --sequence-length 2000
+     ```
+
+## Command Line Options (main.py)
+
+```
+usage: main.py [-h] [--part {2,3}] [--sweep] [--scheduler {fcfs,rr}] [--quantum QUANTUM] [--frames FRAMES] [--num-pages NUM_PAGES] [--sequence-length SEQUENCE_LENGTH] [--output-dir OUTPUT_DIR]
+
+OS Simulation Entry Point (Scheduler or Page Table)
+
+options:
+  -h, --help            show this help message and exit
+  --part {2,3}          Choose the simulation part: '2' for Scheduler (FCFS/RR), '3' for Page Table Comparison. (default: 2)
+  --sweep               Run parameter sweep for the selected part. (default: False)
+  --output-dir OUTPUT_DIR
+                        Directory to save generated charts. (default: output)
+
+Part 2: Scheduler Options:
+  --scheduler {fcfs,rr}
+                        Choose the scheduler (used only if --part 2 and not --sweep). (default: fcfs)
+  --quantum QUANTUM     Time quantum for Round Robin scheduler in ns (used only if --part 2 and scheduler is 'rr'). (default: 500)
+
+Part 3: Page Table Sweep Options (used only if --part 3 and --sweep):
+  --frames FRAMES       Number of physical memory frames available. (default: 8)
+  --num-pages NUM_PAGES
+                        Number of distinct pages in virtual memory. (default: 16)
+  --sequence-length SEQUENCE_LENGTH
+                        Length of reference sequence for each pattern. (default: 1000)
+```
+
+## Output
+
+- **Part 2 (Sweep):** Charts comparing scheduler performance (total time, turnaround, waiting) vs. workload and quantum in the `output/` directory.
+- **Part 3 (Sweep):** Column charts comparing page replacement algorithms (hit rate, miss rate, page faults) across reference patterns in the `output/` directory.
 

@@ -46,8 +46,23 @@ def test_main_rr_custom_quantum(capsys):
 
 @patch('main.perform_parameter_sweep')
 def test_main_parameter_sweep(mock_perform_parameter_sweep, capsys):
-    # Test main with the parameter sweep option.
-    output = run_main_with_args(["main.py", "--sweep"], capsys)
-    assert "Running parameter sweep simulations..." in output
-    # Verify that perform_parameter_sweep was called
-    mock_perform_parameter_sweep.assert_called_once() 
+    # Test main with the parameter sweep option for Part 2.
+    # Note: We assume the default part is '2' if not specified
+    # but it's better to be explicit for testing.
+    output = run_main_with_args(["main.py", "--part", "2", "--sweep"], capsys)
+    assert "Running Scheduler parameter sweep simulations..." in output
+    mock_perform_parameter_sweep.assert_called_once()
+
+# Add a test specifically for Part 3 sweep if desired
+@patch('main.run_page_table_sweep')
+def test_main_page_table_sweep(mock_run_page_table_sweep, capsys):
+    # Test main triggering the page table sweep.
+    run_main_with_args(["main.py", "--part", "3", "--sweep"], capsys)
+    mock_run_page_table_sweep.assert_called_once()
+    # We can check args passed to the mocked function if needed
+    # Example: mock_run_page_table_sweep.assert_called_once_with(expected_args_object)
+
+# Test case for Part 3 without sweep (should print error)
+def test_main_part3_no_sweep(capsys):
+    output = run_main_with_args(["main.py", "--part", "3"], capsys)
+    assert "Error: For --part 3, only the --sweep option is supported" in output 
